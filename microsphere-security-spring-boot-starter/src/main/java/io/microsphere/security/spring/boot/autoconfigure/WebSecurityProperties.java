@@ -1,6 +1,5 @@
 package io.microsphere.security.spring.boot.autoconfigure;
 
-import io.microsphere.security.spring.boot.constants.SecurityConstants;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -9,13 +8,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.microsphere.security.constants.SecurityConstants.WEB_SECURITY_PROPERTY_NAME_PREFIX;
+
 /**
  * Web Security Properties
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy<a/>
  * @since 1.0.0
  */
-@ConfigurationProperties(prefix = SecurityConstants.WEB_SECURITY_PROPERTY_NAME_PREFIX)
+@ConfigurationProperties(prefix = WEB_SECURITY_PROPERTY_NAME_PREFIX)
 public class WebSecurityProperties {
 
     private Hsts hsts = new Hsts();
