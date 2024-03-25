@@ -16,6 +16,7 @@
 
     <name>Microsphere :: Security</name>
     <description>Microsphere Projects for Security</description>
+    <url>https://github.com/microsphere-projects/microsphere-security</url>
 
     <scm>
         <url>https://github.com/microsphere-projects/microsphere-security</url>
@@ -43,9 +44,10 @@
     </properties>
 
     <modules>
-        <module>microsphere-security-commons</module>
         <module>microsphere-security-parent</module>
         <module>microsphere-security-dependencies</module>
+        <module>microsphere-security-core</module>
+        <module>microsphere-security-spring-boot-starter</module>
     </modules>
 
     <distributionManagement>
