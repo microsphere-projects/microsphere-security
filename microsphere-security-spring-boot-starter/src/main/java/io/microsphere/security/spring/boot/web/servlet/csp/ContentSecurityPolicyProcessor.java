@@ -1,6 +1,6 @@
-package io.microsphere.spring.boot.security.web.servlet.csp;
+package io.microsphere.security.spring.boot.web.servlet.csp;
 
-import io.microsphere.spring.boot.security.web.servlet.WebSecurityProcessor;
+import io.microsphere.security.spring.boot.web.servlet.WebSecurityProcessor;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

@@ -1,6 +1,6 @@
-package io.microsphere.spring.boot.security.autoconfigure;
+package io.microsphere.security.spring.boot.autoconfigure;
 
-import io.microsphere.spring.boot.security.constants.SecurityConstants;
+import io.microsphere.security.spring.boot.constants.SecurityConstants;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.springframework.boot.context.properties.ConfigurationProperties;

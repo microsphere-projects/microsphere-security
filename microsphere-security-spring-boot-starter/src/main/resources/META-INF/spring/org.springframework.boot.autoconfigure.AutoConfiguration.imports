@@ -1,1 +1,1 @@
-io.microsphere.spring.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration
+io.microsphere.security.spring.boot.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration

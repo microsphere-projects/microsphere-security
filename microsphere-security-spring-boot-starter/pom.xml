@@ -14,7 +14,7 @@
     <artifactId>microsphere-security-spring-boot-starter</artifactId>
     <version>${revision}</version>
 
-    <name>Microsphere :: Security ::  Spring Boot Starter</name>
+    <name>Microsphere :: Security :: Spring Boot Starter</name>
     <description>Microsphere Security Spring Boot Starter</description>
 
     <dependencies>

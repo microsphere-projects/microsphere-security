@@ -1,4 +1,4 @@
-package io.microsphere.spring.boot.security.annotation;
+package io.microsphere.security.spring.boot.annotation;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 

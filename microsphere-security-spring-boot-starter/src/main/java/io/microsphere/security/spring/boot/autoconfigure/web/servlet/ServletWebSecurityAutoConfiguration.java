@@ -1,12 +1,12 @@
-package io.microsphere.spring.boot.security.autoconfigure.web.servlet;
+package io.microsphere.security.spring.boot.autoconfigure.web.servlet;
 
-import io.microsphere.spring.boot.security.annotation.WebSecurityFilter;
-import io.microsphere.spring.boot.security.autoconfigure.WebSecurityProperties;
-import io.microsphere.spring.boot.security.condition.ConditionalOnEnabledWebSecurity;
-import io.microsphere.spring.boot.security.constants.SecurityConstants;
-import io.microsphere.spring.boot.security.web.servlet.WebSecurityProcessor;
-import io.microsphere.spring.boot.security.web.servlet.WebSecurityProcessorFilter;
-import io.microsphere.spring.boot.security.web.servlet.csp.ContentSecurityPolicyProcessor;
+import io.microsphere.security.spring.boot.annotation.WebSecurityFilter;
+import io.microsphere.security.spring.boot.autoconfigure.WebSecurityProperties;
+import io.microsphere.security.spring.boot.constants.SecurityConstants;
+import io.microsphere.security.spring.boot.web.servlet.WebSecurityProcessor;
+import io.microsphere.security.spring.boot.web.servlet.WebSecurityProcessorFilter;
+import io.microsphere.security.spring.boot.web.servlet.csp.ContentSecurityPolicyProcessor;
+import io.microsphere.security.spring.boot.condition.ConditionalOnEnabledWebSecurity;
 import org.apache.catalina.filters.HttpHeaderSecurityFilter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

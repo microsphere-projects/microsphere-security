@@ -1,4 +1,4 @@
-package io.microsphere.spring.boot.security.web.servlet;
+package io.microsphere.security.spring.boot.web.servlet;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;

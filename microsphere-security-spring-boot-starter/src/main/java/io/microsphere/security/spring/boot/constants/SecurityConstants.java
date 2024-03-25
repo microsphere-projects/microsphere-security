@@ -1,4 +1,4 @@
-package io.microsphere.spring.boot.security.constants;
+package io.microsphere.security.spring.boot.constants;
 
 /**
  * Security Constants
