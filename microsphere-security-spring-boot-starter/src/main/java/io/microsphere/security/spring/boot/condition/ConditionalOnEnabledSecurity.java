@@ -1,6 +1,5 @@
 package io.microsphere.security.spring.boot.condition;
 
-import io.microsphere.security.spring.boot.constants.SecurityConstants;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import java.lang.annotation.Documented;
@@ -8,6 +7,9 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import static io.microsphere.constants.PropertyConstants.ENABLED_PROPERTY_NAME;
+import static io.microsphere.security.constants.SecurityConstants.PROPERTY_NAME_PREFIX;
 
 /**
  * A condition annotation to enable Security
@@ -18,6 +20,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@ConditionalOnProperty(prefix = SecurityConstants.PROPERTY_NAME_PREFIX, name = SecurityConstants.ENABLED_PROPERTY_NAME, matchIfMissing = true)
+@ConditionalOnProperty(prefix = PROPERTY_NAME_PREFIX, name = ENABLED_PROPERTY_NAME, matchIfMissing = true)
 public @interface ConditionalOnEnabledSecurity {
 }
