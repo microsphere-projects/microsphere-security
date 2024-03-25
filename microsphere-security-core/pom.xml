@@ -11,12 +11,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.microsphere-projects</groupId>
-    <artifactId>microsphere-security-commons</artifactId>
+    <artifactId>microsphere-security-core</artifactId>
     <version>${revision}</version>
     <packaging>jar</packaging>
 
-    <name>Microsphere :: Redis :: Commons</name>
-    <description>Microsphere Redis Commons</description>
+    <name>Microsphere :: Security :: Core</name>
+    <description>Microsphere Security Core</description>
 
     <dependencies>
         <!-- Microsphere Core -->
