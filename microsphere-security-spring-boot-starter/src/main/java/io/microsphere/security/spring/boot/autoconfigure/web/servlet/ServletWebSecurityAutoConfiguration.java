@@ -2,11 +2,10 @@ package io.microsphere.security.spring.boot.autoconfigure.web.servlet;
 
 import io.microsphere.security.spring.boot.annotation.WebSecurityFilter;
 import io.microsphere.security.spring.boot.autoconfigure.WebSecurityProperties;
-import io.microsphere.security.spring.boot.constants.SecurityConstants;
+import io.microsphere.security.spring.boot.condition.ConditionalOnEnabledWebSecurity;
 import io.microsphere.security.spring.boot.web.servlet.WebSecurityProcessor;
 import io.microsphere.security.spring.boot.web.servlet.WebSecurityProcessorFilter;
 import io.microsphere.security.spring.boot.web.servlet.csp.ContentSecurityPolicyProcessor;
-import io.microsphere.security.spring.boot.condition.ConditionalOnEnabledWebSecurity;
 import org.apache.catalina.filters.HttpHeaderSecurityFilter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +34,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.microsphere.constants.PropertyConstants.ENABLED_PROPERTY_NAME;
+import static io.microsphere.security.constants.SecurityConstants.WEB_SECURITY_CORS_PROPERTY_NAME_PREFIX;
+import static io.microsphere.security.constants.SecurityConstants.WEB_SECURITY_CSP_PROPERTY_NAME_PREFIX;
+import static io.microsphere.security.constants.SecurityConstants.WEB_SECURITY_FILTER_PROPERTY_NAME_PREFIX;
 import static java.util.Arrays.asList;
 import static javax.servlet.DispatcherType.ERROR;
 import static javax.servlet.DispatcherType.FORWARD;
@@ -63,7 +66,7 @@ public class ServletWebSecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = SecurityConstants.WEB_SECURITY_CSP_PROPERTY_NAME_PREFIX, name = SecurityConstants.ENABLED_PROPERTY_NAME)
+    @ConditionalOnProperty(prefix = WEB_SECURITY_CSP_PROPERTY_NAME_PREFIX, name = ENABLED_PROPERTY_NAME)
     public ContentSecurityPolicyProcessor contentSecurityPolicyHeaderProcessor(WebSecurityProperties webSecurityProperties) {
         WebSecurityProperties.Csp csp = webSecurityProperties.getCsp();
         ContentSecurityPolicyProcessor headerProcessor = new ContentSecurityPolicyProcessor();
@@ -73,7 +76,7 @@ public class ServletWebSecurityAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = SecurityConstants.WEB_SECURITY_FILTER_PROPERTY_NAME_PREFIX, name = SecurityConstants.ENABLED_PROPERTY_NAME, matchIfMissing = true)
+    @ConditionalOnProperty(prefix = WEB_SECURITY_FILTER_PROPERTY_NAME_PREFIX, name = ENABLED_PROPERTY_NAME, matchIfMissing = true)
     public FilterRegistrationBean<Filter> servletWebSecurityFilter(@Autowired @WebSecurityFilter Collection<Filter> filters) {
         FilterRegistrationBean<Filter> filterRegistrationBean = new FilterRegistrationBean<>();
         CompositeFilter filter = new CompositeFilter();
@@ -98,7 +101,7 @@ public class ServletWebSecurityAutoConfiguration {
     @Bean
     @WebSecurityFilter
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = SecurityConstants.WEB_SECURITY_CORS_PROPERTY_NAME_PREFIX, name = SecurityConstants.ENABLED_PROPERTY_NAME)
+    @ConditionalOnProperty(prefix = WEB_SECURITY_CORS_PROPERTY_NAME_PREFIX, name = ENABLED_PROPERTY_NAME)
     public CorsFilter corsFilter(WebSecurityProperties properties) {
         CorsConfigurationSource corsConfigurationSource = buildCorsConfigurationSource(properties);
         CorsFilter corsFilter = new CorsFilter(corsConfigurationSource);
