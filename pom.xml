@@ -60,7 +60,7 @@
         <module>microsphere-security-parent</module>
         <module>microsphere-security-dependencies</module>
         <module>microsphere-security-core</module>
-        <module>microsphere-security-spring-boot-starter</module>
+        <module>microsphere-security-spring-boot</module>
     </modules>
 
     <distributionManagement>
