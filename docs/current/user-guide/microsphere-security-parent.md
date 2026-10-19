@@ -168,6 +168,11 @@ your invocation does not resolve the property from the reactor.
 - `@since 1.0.0` javadoc tags elsewhere in the project say nothing about this module's
   availability; a POM module has no javadoc.
 
+- **Release date:** none — as of revision `0.0.1-SNAPSHOT` this module has never been released
+  (no git tags, no `release` branch, nothing in Maven Central).
+- **Changelog summary:** the repository keeps no `CHANGELOG` or release-notes file; the `main`
+  branch commit history is the only change record.
+
 ## Compatibility
 
 - **Spring Boot generation:** the code in this repository compiles against `javax.servlet.*`
@@ -183,6 +188,24 @@ your invocation does not resolve the property from the reactor.
   repository.
 - **All third-party versions:** inherited through the externally imported
   `microsphere-spring-cloud-dependencies` BOM; consult that BOM for what is actually managed.
+
+### Java version matrix
+
+This POM module compiles no bytecode itself; the applicable baseline is the one inherited by the
+code modules (`microsphere-security-core`, `microsphere-security-spring-boot`):
+
+| Java Version | Supported | Notes |
+| --- | --- | --- |
+| 8 | Yes | CI-verified (`.github/workflows/maven.yml`, Temurin `java: [ '8' ]`); the authoritative source/target level is inherited from the external parent `microsphere-build:0.0.21` and is not declared in this repository. |
+| 11 | Unverified | No CI coverage here; the children use only Java 8-era APIs. |
+| 17 | Unverified | No CI coverage here. |
+
+### Dependency compatibility
+
+| Dependency | Range on this line | Provenance |
+| --- | --- | --- |
+| Spring Boot and all third-party versions | Spring Boot **2.x** generation (children use `javax.servlet` + `spring.factories`); 3.x not supported | supplied by the imported external `microsphere-spring-cloud-dependencies` BOM — the concrete versions are **not** declared in this repository |
+| `microsphere-java-core` and project artifacts | resolved from the same external chain / reactor | external BOM / reactor |
 
 ## Related documents
 

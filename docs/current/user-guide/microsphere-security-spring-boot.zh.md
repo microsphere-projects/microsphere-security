@@ -266,6 +266,16 @@ public interface WebSecurityProcessor {
 
 实现类可以通过 `@Order` 或实现 `Ordered` 来排序；排序由 `AnnotationAwareOrderComparator` 执行。
 
+#### 方法：`process(HttpServletRequest request, HttpServletResponse response)`
+
+- 说明：将当前处理器应用于本次请求/响应对，通常用于设置安全响应头。在
+  `WebSecurityProcessorFilter` 中它于 `chain.doFilter(...)` **之前**执行，即先于控制器，
+  此时响应尚未提交。
+- 参数：`request` —— 当前 `HttpServletRequest`；`response` —— 待修改的 `HttpServletResponse`。
+- 返回值：`void`。
+- 异常：`IOException`、`ServletException` —— 由接口声明并向容器传播；纯设置响应头的实现
+  自身不产生 I/O。
+
 ### WebSecurityProcessorFilter
 
 `io.microsphere.security.spring.boot.web.servlet.WebSecurityProcessorFilter`——一个公开的
@@ -279,6 +289,26 @@ public interface WebSecurityProcessor {
 处理器。两个 setter（`setPolicyDirectives`、`setReportOnly`）以及两个公开响应头名常量：
 `CONTENT_SECURITY_POLICY_HEADER`（`Content-Security-Policy`）与
 `CONTENT_SECURITY_POLICY_REPORT_ONLY_HEADER`（`Content-Security-Policy-Report-Only`）。
+
+#### 方法：`process(...)`（CSP 实现）
+
+- 说明：将 `policyDirectives` 写入 `Content-Security-Policy` 响应头；当 `reportOnly` 为
+  `true` 时写入 `Content-Security-Policy-Report-Only`。
+- 参数：当前请求与响应；请求不会被读取。
+- 返回值：`void`。
+- 异常：`IOException`、`ServletException` —— 仅为接口兼容性而声明；该实现只调用
+  `response.setHeader(...)`。
+
+#### 方法：`setPolicyDirectives(String policyDirectives)` / `setReportOnly(boolean reportOnly)`
+
+- 说明：配置入口；`ServletWebSecurityAutoConfiguration` 从
+  `microsphere.security.web.csp.policy-directives` 与 `microsphere.security.web.csp.report-only`
+  取值注入。
+- 参数：策略指令字符串 / report-only 开关。
+- 返回值：`void`。
+- 异常：无。
+- 注意：**没有 null/空白防护** —— 若启用 CSP 而未设置 `policy-directives`，响应头将被写入
+  字面量 `null`（源码可验证；参见开发者指南）。
 
 ### ServletWebSecurityAutoConfiguration
 
@@ -446,6 +476,10 @@ public class ReferrerPolicyProcessor implements WebSecurityProcessor {
 - 它在 `microsphere-security-core` 依赖上写的 `<version>${revision}</version>` 由 reactor 解析，
   而不是由 BOM 解析。
 
+- **发布日期：** 无 —— 截至版本 `0.0.1-SNAPSHOT`，本模块从未正式发布（无 git 标签、无 `release`
+  分支、未进入 Maven Central）。
+- **变更日志摘要：** 仓库中没有 `CHANGELOG` 或发布说明文件；`main` 分支的提交历史是唯一的变更记录。
+
 ## 兼容性
 
 - **仅支持 Spring Boot 2.x servlet 栈。** 源码 import 了 `javax.servlet.Filter`、
@@ -465,6 +499,24 @@ public class ReferrerPolicyProcessor implements WebSecurityProcessor {
 - **Spring Boot / Spring Framework / `commons-lang3` / Servlet API 版本：** 此处一个都没声明；
   它们经由外部导入的 `microsphere-spring-cloud-dependencies` BOM 继承。请查看你实际解析出的依赖树，
   不要臆测。
+
+### Java 版本矩阵
+
+| Java 版本 | 是否支持 | 说明 |
+| --- | --- | --- |
+| 8 | 支持 | CI 已验证（`.github/workflows/maven.yml`，Temurin `java: [ '8' ]`）；权威的 source/target 级别继承自外部父 POM `microsphere-build:0.0.21`，本仓库未声明。 |
+| 11 | 未验证 | CI 未覆盖；源码没有使用 Java 8 之后的 API。 |
+| 17 | 未验证 | CI 未覆盖；实际支持程度还取决于外部管理的 Spring Boot 2.x 依赖版本。 |
+
+### 依赖兼容性矩阵
+
+| 依赖 | 本版本线的范围 | 说明 |
+| --- | --- | --- |
+| Spring Boot | **2.x** servlet 代际；**不支持 3.x**（`javax.servlet.*` import 加 `spring.factories` 注册；Boot 3 需要 `jakarta.*` 与 `AutoConfiguration.imports`） | 版本继承自外部 `microsphere-spring-cloud-dependencies` BOM —— 本仓库未声明 |
+| `javax.servlet:javax.servlet-api` | 解析时由外部链决定的版本 | 本 POM 中声明为 `provided` |
+| 内嵌 Tomcat | 运行时必需 | 自动配置要求 `org.apache.catalina.startup.Tomcat` 与 `HttpHeaderSecurityFilter`；经可选的 `spring-boot-starter-web` 传递而来 |
+| `microsphere-security-core` | 与本模块相同的 `${revision}` | reactor 内的显式依赖 |
+| `spring-boot-starter-webflux` | 仅 test 作用域 | 只为获得 `WebTestClient`；本模块不是响应式的 |
 
 ## 相关文档
 

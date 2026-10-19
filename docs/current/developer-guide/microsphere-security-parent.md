@@ -6,7 +6,7 @@
 - User-facing docs: [../user-guide/microsphere-security-parent.md](../user-guide/microsphere-security-parent.md)
 - Chinese mirror: [microsphere-security-parent.zh.md](microsphere-security-parent.zh.md)
 
-## Purpose
+## Architecture Design
 
 `microsphere-security-parent` is a `pom`-packaging convention module. It is the POM parent of
 all three buildable/consuming modules (`microsphere-security-dependencies`,
@@ -19,7 +19,7 @@ none of which are declared in this repository.
 It has no `src/` directory, no `<modules>` element (it is *not* an aggregator) and no `<build>`
 section.
 
-## Inheritance and effect
+## Module Dependencies
 
 ```mermaid
 graph TD
@@ -48,7 +48,7 @@ graph TD
 | parent → external BOM | `<scope>import</scope>`, `<type>pom</type>` | Third-party versions become available to the three child modules without repeating them. |
 | parent → child modules | `<parent>` in each child POM | Child modules declare `<version>${revision}</version>` and no `<properties>`. |
 
-## Source analysis
+## Source Code Analysis
 
 The module is 40 lines of POM:
 
@@ -95,6 +95,37 @@ Observations that matter when editing this file:
 4. **Nothing is managed for the project's own artifacts here.** That is the job of
    [microsphere-security-dependencies.md](microsphere-security-dependencies.md), which does not
    feed back into this POM.
+
+## Design Patterns
+
+- **Convention Parent** — a single `dependencyManagement` block (importing one external BOM) is
+  declared once here and inherited by the three child modules, so no child repeats a version.
+- **BOM Import / dependency mediation** — `<scope>import</scope>` pulls the external
+  `microsphere-spring-cloud-dependencies` coordinates into this POM's managed space, mediating
+  third-party versions the repository itself never declares.
+- **CI-friendly versioning** — the `${revision}` placeholder plus the property indirection
+  `microsphere-spring-cloud.version` keep versions flattenable and overridable at build time.
+
+## Workflow
+
+The flow below is resolved at *build* time, not runtime: the root `revision` feeds the parent's
+version property, which selects the external BOM version, which in turn supplies the managed
+versions the child modules declare without repeating. The exact third-party versions live in the
+external `microsphere-spring-cloud-dependencies` chain, so resolve them with `help:effective-pom`
+and never guess them.
+
+```mermaid
+flowchart TD
+    R["root pom.xml: revision = 0.0.1-SNAPSHOT"]
+    PROP["parent POM: microsphere-spring-cloud.version = ${revision}"]
+    IMP["dependencyManagement import:<br/>microsphere-spring-cloud-dependencies (EXTERNAL BOM)"]
+    EFF["effective managed versions<br/>Spring Boot / Servlet API / JUnit / microsphere-java-core"]
+    CHILD["children: core, spring-boot, dependencies BOM<br/>declare dependencies WITHOUT versions"]
+    R --> PROP
+    PROP --> IMP
+    IMP --> EFF
+    EFF --> CHILD
+```
 
 ## The revision coupling
 

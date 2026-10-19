@@ -160,6 +160,11 @@ keeps the placeholder: it declares `<version>${revision}</version>` on the
   `microsphere-spring-cloud-dependencies` BOM imported by the parent, and ultimately by the
   external `microsphere-build:0.0.21` parent.
 
+- **Release date:** none — as of revision `0.0.1-SNAPSHOT` this module has never been released
+  (no git tags, no `release` branch, nothing in Maven Central).
+- **Changelog summary:** the repository keeps no `CHANGELOG` or release-notes file; the `main`
+  branch commit history is the only change record.
+
 ## Compatibility
 
 - A `pom` BOM is version-agnostic in itself: it declares coordinates, not bytecode, so it does
@@ -169,6 +174,24 @@ keeps the placeholder: it declares `<version>${revision}</version>` on the
   3.x is not supported on this code line.
 - The JDK baseline is inherited from the external parent `microsphere-build:0.0.21` and is not
   declared in this repository.
+
+### Java version matrix
+
+The BOM contains no bytecode; the baseline that applies is the one of the artifacts it manages
+(both built by this reactor):
+
+| Java Version | Supported | Notes |
+| --- | --- | --- |
+| 8 | Yes | CI-verified (`.github/workflows/maven.yml`, Temurin `java: [ '8' ]`); the authoritative source/target level is inherited from the external parent `microsphere-build:0.0.21` and is not declared in this repository. |
+| 11 | Unverified | No CI coverage here; the managed modules use only Java 8-era APIs. |
+| 17 | Unverified | No CI coverage here. |
+
+### Managed-coordinate compatibility
+
+| Managed coordinate | Produced by this reactor | Consumption note |
+| --- | --- | --- |
+| `io.github.microsphere-projects:microsphere-security-core` | yes | version-free dependencies resolve through this BOM |
+| `io.github.microsphere-projects:microsphere-security-spring-boot-starter` | **no** — the built artifact is `microsphere-security-spring-boot` | forward-looking placeholder; depend on the real artifactId explicitly |
 
 ## Related documents
 

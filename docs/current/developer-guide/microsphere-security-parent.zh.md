@@ -6,7 +6,7 @@
 - 面向用户的文档：[../user-guide/microsphere-security-parent.md](../user-guide/microsphere-security-parent.zh.md)
 - 英文原文：[microsphere-security-parent.md](microsphere-security-parent.md)
 
-## 目的
+## 架构设计
 
 `microsphere-security-parent` 是一个 `pom` 打包类型的约定模块。它是三个可构建/可消费模块
 （`microsphere-security-dependencies`、`microsphere-security-core`、
@@ -17,7 +17,7 @@
 
 它没有 `src/` 目录，没有 `<modules>` 元素（它*不是*聚合器），也没有 `<build>` 段。
 
-## 继承关系与作用
+## 模块依赖关系
 
 ```mermaid
 graph TD
@@ -92,6 +92,35 @@ graph TD
 4. **本工程自身的构件没有在这里被管理。** 那是
    [microsphere-security-dependencies.zh.md](microsphere-security-dependencies.zh.md) 的职责，
    并且它不会反向作用到本 POM。
+
+## 设计模式
+
+- **约定式父工程（Convention Parent）** —— 这里只声明一次 `dependencyManagement` 块（导入一个
+  外部 BOM），由三个子模块继承，因此没有任何子模块需要重复版本号。
+- **BOM 导入 / 依赖中介（BOM Import / dependency mediation）** —— `<scope>import</scope>` 把外部
+  `microsphere-spring-cloud-dependencies` 的坐标拉进本 POM 的管理空间，中介了本仓库自己从未声明的
+  第三方版本。
+- **CI 友好版本（CI-friendly versioning）** —— `${revision}` 占位符加上属性间接层
+  `microsphere-spring-cloud.version`，使版本在构建期既可被扁平化又可被覆盖。
+
+## 工作流程
+
+下面的流程是在*构建期*解析的、而非运行期：根 POM 的 `revision` 供给父工程的版本属性，该属性选定
+外部 BOM 的版本，外部 BOM 进而提供子模块无需重复声明的受管理版本。确切的第三方版本存在于外部
+`microsphere-spring-cloud-dependencies` 链中，因此请用 `help:effective-pom` 解析它们，绝不猜测。
+
+```mermaid
+flowchart TD
+    R["root pom.xml: revision = 0.0.1-SNAPSHOT"]
+    PROP["parent POM: microsphere-spring-cloud.version = ${revision}"]
+    IMP["dependencyManagement import:<br/>microsphere-spring-cloud-dependencies (EXTERNAL BOM)"]
+    EFF["effective managed versions<br/>Spring Boot / Servlet API / JUnit / microsphere-java-core"]
+    CHILD["children: core, spring-boot, dependencies BOM<br/>declare dependencies WITHOUT versions"]
+    R --> PROP
+    PROP --> IMP
+    IMP --> EFF
+    EFF --> CHILD
+```
 
 ## revision 耦合
 

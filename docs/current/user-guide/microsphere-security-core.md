@@ -160,6 +160,11 @@ being an accident.
   that references them. Changing a prefix in a later release will not take effect in already
   compiled consumers without recompilation.
 
+- **Release date:** none — as of revision `0.0.1-SNAPSHOT` this module has never been released
+  (no git tags, no `release` branch, nothing in Maven Central).
+- **Changelog summary:** the repository keeps no `CHANGELOG` or release-notes file; the `main`
+  branch commit history is the only change record.
+
 ## Compatibility
 
 - Pure Java library with no Spring, servlet or logging dependency of its own, so it is
@@ -171,6 +176,21 @@ being an accident.
 - The version of `microsphere-java-core` you actually get is decided by the externally
   imported `microsphere-spring-cloud-dependencies` BOM, so it depends on which snapshot of
   that BOM your build resolves.
+
+### Java version matrix
+
+| Java Version | Supported | Notes |
+| --- | --- | --- |
+| 8 | Yes | CI-verified: `.github/workflows/maven.yml` builds with Temurin `java: [ '8' ]`. The authoritative source/target level is inherited from the external parent `microsphere-build:0.0.21` and is not declared in this repository. |
+| 11 | Unverified | No CI coverage here; nothing in the sources uses post-Java-8 APIs, so running on 11 is expected to work, but this repository does not test it. |
+| 17 | Unverified | Same as 11 — this module is plain Java with no framework dependency. |
+
+### Dependency compatibility
+
+| Dependency | Scope | Version range on this line | Provenance |
+| --- | --- | --- | --- |
+| `io.github.microsphere-projects:microsphere-java-core` | compile | version-free in this POM; whatever the external chain resolves | external `microsphere-spring-cloud-dependencies` BOM |
+| `org.junit.jupiter:junit-jupiter-api` | test | version-free in this POM | same external BOM chain |
 
 ## Related documents
 

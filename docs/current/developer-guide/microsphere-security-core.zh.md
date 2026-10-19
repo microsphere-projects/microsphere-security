@@ -6,7 +6,7 @@
 - 面向用户的文档：[../user-guide/microsphere-security-core.md](../user-guide/microsphere-security-core.zh.md)
 - 英文原文：[microsphere-security-core.md](microsphere-security-core.md)
 
-## 目的
+## 架构设计
 
 项目的常量层。它只包含一个生产类型
 `io.microsphere.security.constants.SecurityConstants`，这是一个 `interface`，其成员就是
@@ -16,7 +16,7 @@ Spring Boot 模块所使用的 `microsphere.security.*` 配置属性前缀。它
 
 本模块有意不引入任何自己的框架依赖；从非 Spring 代码中使用它是安全的。
 
-## 模块结构
+### 模块结构
 
 ```text
 microsphere-security-core/
@@ -28,7 +28,7 @@ microsphere-security-core/
         └── SecurityConstantsTest.java
 ```
 
-## 依赖
+## 模块依赖关系
 
 ```mermaid
 graph LR
@@ -112,13 +112,45 @@ import static io.microsphere.constants.SymbolConstants.DOT_CHAR;                
 不是编译错误。若要新增常量，请同时在测试中补一条对应的 `assertEquals`，并在 javadoc 里写明
 它是否以点结尾。
 
-### 关于用接口承载常量
+## 设计模式
 
 把常量放在 `interface` 上意味着任何 `implements SecurityConstants` 的类型都会不加限定地继承
 这五个名字，而且该接口可能被意外实现。它也无法使用常见的 `final class + private constructor`
 防护。当前代码库从未实现该接口 —— 它只通过 `SecurityConstants.CONSTANT` 或静态导入被引用 ——
 因此这一风险仅是理论上的。新增类型时请保持该不变式：优先使用静态导入（这正是
 `microsphere-security-spring-boot` 的做法）而不是 `implements`。
+
+这里用到的模式：
+
+- **常量接口（Constant Interface）** —— `SecurityConstants` 本身。接口成员隐式即为
+  `public static final`，因此任何 `implements` 它的类型都会不加限定地继承这五个名字；本模块
+  刻意从不实现该接口，只通过静态导入或 `SecurityConstants.CONSTANT` 引用这些常量，从而把
+  暴露面保持在理论层面。
+- **共享注释 / 单一真相来源（Shared Comments / single-source-of-truth）** —— 每个前缀字面量
+  都恰好组合一次，来自外部的 `MICROSPHERE_PROPERTY_NAME_PREFIX` 加上 `DOT_CHAR`，因此下游模块
+  复用同一个组合结果，而无需重新键入 `microsphere.security.*` 文本。
+- **无行为型模式** —— 本模块没有任何运行期逻辑；每个成员都是编译期常量数据，因此没有
+  Strategy/Template/Chain 一类模式可用武之地。
+
+## 工作流程
+
+本模块没有运行期工作流程：它唯一的“流程”是下面这些常量前缀的编译期组合，每个前缀都由外部
+平台前缀推导而来。
+
+```mermaid
+flowchart LR
+    EXT["microsphere-java-core<br/>MICROSPHERE_PROPERTY_NAME_PREFIX = microsphere. + DOT_CHAR"]
+    ROOTP["PROPERTY_NAME_PREFIX<br/>microsphere.security."]
+    WEBP["WEB_SECURITY_PROPERTY_NAME_PREFIX<br/>microsphere.security.web (no trailing dot)"]
+    FILTERP["WEB_SECURITY_FILTER_PROPERTY_NAME_PREFIX<br/>microsphere.security.web.filter."]
+    CSPP["WEB_SECURITY_CSP_PROPERTY_NAME_PREFIX<br/>microsphere.security.web.csp."]
+    CORS_P["WEB_SECURITY_CORS_PROPERTY_NAME_PREFIX<br/>microsphere.security.web.cors."]
+    EXT --> ROOTP
+    ROOTP --> WEBP
+    WEBP --> FILTERP
+    WEBP --> CSPP
+    WEBP --> CORS_P
+```
 
 ## 扩展点
 

@@ -272,6 +272,17 @@ public interface WebSecurityProcessor {
 Implementations may be ordered with `@Order` or by implementing `Ordered`; the ordering is applied
 with `AnnotationAwareOrderComparator`.
 
+#### Method: `process(HttpServletRequest request, HttpServletResponse response)`
+
+- Description: applies this processor to the current request/response pair, typically setting a
+  security response header. Inside `WebSecurityProcessorFilter` it runs **before**
+  `chain.doFilter(...)`, i.e. before the controller executes, while the response is uncommitted.
+- Parameters: `request` — the current `HttpServletRequest`; `response` — the
+  `HttpServletResponse` to modify.
+- Returns: `void`.
+- Throws: `IOException`, `ServletException` — declared by the interface and propagated to the
+  container; a pure header-setting implementation does no I/O of its own.
+
 ### `WebSecurityProcessorFilter`
 
 `io.microsphere.security.spring.boot.web.servlet.WebSecurityProcessorFilter` — a public `Filter`
@@ -286,6 +297,25 @@ processors run ahead of your controller, and the response they modify has not be
 built-in processor. Two setters (`setPolicyDirectives`, `setReportOnly`) and two public header
 name constants, `CONTENT_SECURITY_POLICY_HEADER` (`Content-Security-Policy`) and
 `CONTENT_SECURITY_POLICY_REPORT_ONLY_HEADER` (`Content-Security-Policy-Report-Only`).
+
+#### Method: `process(...)` (CSP implementation)
+
+- Description: writes `policyDirectives` into the `Content-Security-Policy` header, or into
+  `Content-Security-Policy-Report-Only` when `reportOnly` is `true`.
+- Parameters: the current request and response; the request is not read.
+- Returns: `void`.
+- Throws: `IOException`, `ServletException` — declared for interface compatibility; this
+  implementation only calls `response.setHeader(...)`.
+
+#### Methods: `setPolicyDirectives(String policyDirectives)` / `setReportOnly(boolean reportOnly)`
+
+- Description: configuration entry points; `ServletWebSecurityAutoConfiguration` populates them
+  from `microsphere.security.web.csp.policy-directives` and `microsphere.security.web.csp.report-only`.
+- Parameters: the directive string / the report-only flag.
+- Returns: `void`.
+- Throws: none.
+- Caveat: there is **no null/blank guard** — with CSP enabled and no `policy-directives` set, the
+  header is written with the literal `null` value (verifiable in the source; see the Developer Guide).
 
 ### `ServletWebSecurityAutoConfiguration`
 
@@ -461,6 +491,11 @@ If instead you want a raw `Filter` inside the same composite, annotate its bean 
 - The `<version>${revision}</version>` written on its `microsphere-security-core` dependency is
   resolved by the reactor, not by the BOM.
 
+- **Release date:** none — as of revision `0.0.1-SNAPSHOT` this module has never been released
+  (no git tags, no `release` branch, nothing in Maven Central).
+- **Changelog summary:** the repository keeps no `CHANGELOG` or release-notes file; the `main`
+  branch commit history is the only change record.
+
 ## Compatibility
 
 - **Spring Boot 2.x servlet stack only.** The sources import `javax.servlet.Filter`,
@@ -481,6 +516,24 @@ If instead you want a raw `Filter` inside the same composite, annotate its bean 
 - **Spring Boot / Spring Framework / `commons-lang3` / Servlet API versions:** none are declared
   here; they are inherited through the externally imported
   `microsphere-spring-cloud-dependencies` BOM. Check your resolved tree instead of assuming.
+
+### Java version matrix
+
+| Java Version | Supported | Notes |
+| --- | --- | --- |
+| 8 | Yes | CI-verified (`.github/workflows/maven.yml`, Temurin `java: [ '8' ]`); the authoritative source/target level is inherited from the external parent `microsphere-build:0.0.21` and is not declared in this repository. |
+| 11 | Unverified | No CI coverage here; nothing in the sources uses post-Java-8 APIs. |
+| 17 | Unverified | No CI coverage here; practical support additionally depends on the externally managed Spring Boot 2.x dependency versions. |
+
+### Dependency compatibility matrix
+
+| Dependency | Range on this line | Notes |
+| --- | --- | --- |
+| Spring Boot | **2.x** servlet generation; **3.x not supported** (`javax.servlet.*` imports plus `spring.factories` registration; Boot 3 requires `jakarta.*` and `AutoConfiguration.imports`) | version inherited from the external `microsphere-spring-cloud-dependencies` BOM — not declared in this repository |
+| `javax.servlet:javax.servlet-api` | the version the external chain manages at resolve time | declared `provided` in this POM |
+| Embedded Tomcat | required at runtime | the auto-configuration demands `org.apache.catalina.startup.Tomcat` and `HttpHeaderSecurityFilter`; arrives transitively via the optional `spring-boot-starter-web` |
+| `microsphere-security-core` | same `${revision}` as this module | explicit reactor dependency |
+| `spring-boot-starter-webflux` | test scope only | used to obtain `WebTestClient`; the module is not reactive |
 
 ## Related documents
 

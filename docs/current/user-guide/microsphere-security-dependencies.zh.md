@@ -153,6 +153,10 @@ parent 对外部 `microsphere-spring-cloud-dependencies` BOM 的导入同样作�
 - 该 BOM 在任何地方都**没有**钉住三方版本；所有外部版本由 parent 导入的
   `microsphere-spring-cloud-dependencies` BOM 决定，并最终取决于外部父 POM `microsphere-build:0.0.21`。
 
+- **发布日期：** 无 —— 截至版本 `0.0.1-SNAPSHOT`，本模块从未正式发布（无 git 标签、无 `release`
+  分支、未进入 Maven Central）。
+- **变更日志摘要：** 仓库中没有 `CHANGELOG` 或发布说明文件；`main` 分支的提交历史是唯一的变更记录。
+
 ## 兼容性
 
 - `pom` 形式的 BOM 本身与版本无关：它声明的是坐标而非字节码，因此既不约束 JDK，也不约束 Spring
@@ -160,6 +164,23 @@ parent 对外部 `microsphere-spring-cloud-dependencies` BOM 的导入同样作�
 - 它所管理的构件来自本 reactor，而本 reactor 的代码针对 Spring Boot 2.x servlet 栈
   （`javax.servlet.*` 导入加上 `META-INF/spring.factories` 注册）。该代码线不支持 Spring Boot 3.x。
 - JDK 基线继承自外部父 POM `microsphere-build:0.0.21`，本仓库中未声明。
+
+### Java 版本矩阵
+
+BOM 不含字节码；适用的是它所管理的构件（均由本 reactor 构建）的基线：
+
+| Java 版本 | 是否支持 | 说明 |
+| --- | --- | --- |
+| 8 | 支持 | CI 已验证（`.github/workflows/maven.yml`，Temurin `java: [ '8' ]`）；权威的 source/target 级别继承自外部父 POM `microsphere-build:0.0.21`，本仓库未声明。 |
+| 11 | 未验证 | CI 未覆盖；被管理的模块只使用 Java 8 时代的 API。 |
+| 17 | 未验证 | CI 未覆盖。 |
+
+### 受管坐标兼容性
+
+| 受管坐标 | 是否由本 reactor 产出 | 使用注意 |
+| --- | --- | --- |
+| `io.github.microsphere-projects:microsphere-security-core` | 是 | 不写版本的依赖可经此 BOM 解析 |
+| `io.github.microsphere-projects:microsphere-security-spring-boot-starter` | **否** —— 实际构建的构件是 `microsphere-security-spring-boot` | 前瞻占位条目；请显式依赖真实的 artifactId |
 
 ## 相关文档
 

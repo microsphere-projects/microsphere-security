@@ -6,7 +6,7 @@
 - 面向用户的文档：[../user-guide/microsphere-security-dependencies.md](../user-guide/microsphere-security-dependencies.zh.md)
 - 英文原文：[microsphere-security-dependencies.md](microsphere-security-dependencies.md)
 
-## 目的
+## 架构设计
 
 `microsphere-security-dependencies` 是本项目对外发布的 **BOM**：一个 `pom` 打包类型的模块，
 其唯一内容是一个 `dependencyManagement` 块，以 `${revision}` 列出本项目自身的坐标，使下游应用
@@ -15,7 +15,7 @@
 它在依赖图中是一个*叶子*：本 reactor 内没有任何模块导入它。它是为使用者产出的，这意味着这里
 出错不会让本地构建失败 —— 见「陷阱」。
 
-## 它管理什么、谁消费它
+## 模块依赖关系
 
 ```mermaid
 graph TD
@@ -79,6 +79,34 @@ graph TD
 - 两个条目都使用 `<version>${revision}</version>` 而不是 `${project.version}`，与全仓库统一的
   CI 友好约定一致。
 - 该 BOM 不管理 `microsphere-security-parent`，也不管理自身；它们是 POM，不是可消费的库。
+
+## 设计模式
+
+- **构件清单（Bill of Materials, BOM）** —— 一份锁定在 `${revision}` 的对外坐标清单：它不带
+  任何代码，只有 `dependencyManagement` 条目，供下游应用导入后即可依赖本项目构件而不重复版本。
+- **叶子构件（Leaf artifact）** —— 本 BOM 只被下游消费，对本地 reactor 不可见，这正是下文
+  **陷阱** 一节记录的静默失败性质：这里的错误坐标无法让本仓库的 `mvn verify` 失败。
+- **悬空坐标（反模式）** —— `microsphere-security-spring-boot-starter` 条目是一条没有产出模块的
+  受管理坐标；这里诚实地把它列为例外，而不是受支持的构件（见下文的 starter 命名不一致一节）。
+
+## 工作流程
+
+下面的流程只发生在*下游*构建中：它在某个使用者针对导入的 BOM 解析依赖时才运行。
+
+```mermaid
+flowchart TD
+    APP["Downstream application POM"]
+    IMPORT["import microsphere-security-dependencies<br/>scope = import"]
+    DECL["declare dependency on<br/>microsphere-security-core WITHOUT version"]
+    OK["Maven resolves version from BOM: build succeeds"]
+    BAD["declare microsphere-security-spring-boot-starter"]
+    FAIL["artifact not produced by this reactor: resolution fails"]
+    APP --> IMPORT
+    IMPORT --> DECL
+    DECL --> OK
+    APP --> BAD
+    BAD --> FAIL
+```
 
 ## starter 命名不一致（已知问题）
 

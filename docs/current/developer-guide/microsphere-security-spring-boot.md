@@ -6,7 +6,7 @@
 - User-facing docs: [../user-guide/microsphere-security-spring-boot.md](../user-guide/microsphere-security-spring-boot.md)
 - Chinese mirror: [microsphere-security-spring-boot.zh.md](microsphere-security-spring-boot.zh.md)
 
-## Purpose
+## Architecture Design
 
 The Spring Boot integration layer. One auto-configuration class registers a set of servlet
 filters that emit security response headers (HSTS, XSS protection, `X-Frame-Options`,
@@ -15,7 +15,7 @@ filters that emit security response headers (HSTS, XSS protection, `X-Frame-Opti
 header emission for four of the features is delegated to Tomcat's own
 `HttpHeaderSecurityFilter`.
 
-## Module layout
+### Module layout
 
 ```text
 microsphere-security-spring-boot/
@@ -39,7 +39,7 @@ microsphere-security-spring-boot/
         └── ServletWebSecurityAutoConfigurationTest.java
 ```
 
-## Dependencies
+## Module Dependencies
 
 ```mermaid
 graph TD
@@ -104,7 +104,7 @@ Spring Boot 3 support**: on Boot 3 the `javax` → `jakarta` namespace change wo
 first. Confirm against the Spring Boot version your application actually resolves (see
 `help:effective-pom` in [microsphere-security-parent.md](microsphere-security-parent.md)).
 
-## Source analysis
+## Source Code Analysis
 
 ### `annotation.WebSecurityFilter`
 
@@ -353,7 +353,7 @@ Note what it proves and what it does not: it proves the end-to-end header outcom
 assert the composite filter's internal order, does not assert `Access-Control-Allow-*` contents,
 and does not assert the "absent property" defaults.
 
-## Design patterns
+## Design Patterns
 
 | Pattern | Evidence in code | Consequence |
 | --- | --- | --- |
@@ -366,7 +366,7 @@ and does not assert the "absent property" defaults.
 | **Facade over configuration** | `WebSecurityProperties` aggregates six unrelated header policies behind one prefix with eager non-null nested objects | One `@EnableConfigurationProperties` wires everything and getters never NPE — but `enabled=false` inside a bound object is *not* what gates bean creation; each bean is gated by its own `@ConditionalOnProperty`, so the properties object and the conditions are two parallel sources of truth. |
 | **Template Method (weak)** | `doFilter` declared `final`, ordering fixed | Guarantees processor-before-chain semantics at the cost of extension by subclassing; extend by adding processors instead. |
 
-## Request-processing workflow
+## Workflow: Request Processing
 
 ```mermaid
 sequenceDiagram
@@ -414,7 +414,7 @@ stable sort keeps injection order, which follows bean-definition order
 (`webSecurityProcessorFilter`, `corsFilter`, `httpHeaderSecurityFilter`). Do not build features on
 top of that assumption; pin it with `@Order` if it matters.
 
-## Auto-configuration conditional gating
+## Workflow: Conditional Gating
 
 ```mermaid
 flowchart TD
@@ -467,7 +467,7 @@ The two class-level gates are drawn as separate steps because that is what the a
 declare; no test in this repository exercises `microsphere.security.enabled=false` in isolation, so
 confirm that outer gate with the condition-evaluation report rather than assuming it.
 
-## Processor composition and ordering
+## Workflow: Processor Ordering
 
 ```mermaid
 flowchart TD

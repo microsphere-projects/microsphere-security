@@ -6,7 +6,7 @@
 - User-facing docs: [../user-guide/microsphere-security-core.md](../user-guide/microsphere-security-core.md)
 - Chinese mirror: [microsphere-security-core.zh.md](microsphere-security-core.zh.md)
 
-## Purpose
+## Architecture Design
 
 The constants layer of the project. It contains exactly one production type,
 `io.microsphere.security.constants.SecurityConstants`, an `interface` whose members are the
@@ -17,7 +17,7 @@ by the external `microsphere-java-core`, so that no other module has to re-type 
 The module deliberately has no framework dependency of its own; it is safe to use from
 non-Spring code.
 
-## Module layout
+### Module layout
 
 ```text
 microsphere-security-core/
@@ -29,7 +29,7 @@ microsphere-security-core/
         └── SecurityConstantsTest.java
 ```
 
-## Dependencies
+## Module Dependencies
 
 ```mermaid
 graph LR
@@ -56,7 +56,7 @@ graph LR
 `microsphere-security-spring-boot` depends on this module with an explicit
 `<version>${revision}</version>`; nothing else in the reactor consumes it.
 
-## Source analysis
+## Source Code Analysis
 
 `SecurityConstants` is declared as:
 
@@ -116,7 +116,7 @@ constant with the wrong termination, produces a silently non-matching property n
 a compile error. If you add a constant, add a matching `assertEquals` to the test and state in
 the javadoc whether it is dot-terminated.
 
-### The interface-as-constants-holder choice
+## Design Patterns
 
 Holding constants on an `interface` means any type that `implements SecurityConstants` inherits
 all five names unqualified, and the interface can be implemented by accident. It also prevents
@@ -124,6 +124,38 @@ the usual `final class + private constructor` guard. The current codebase never 
 interface — it is only ever referenced through `SecurityConstants.CONSTANT` or a static import —
 so the exposure is theoretical. Keep that invariant if you add types: prefer static imports
 (what `microsphere-security-spring-boot` does) over `implements`.
+
+The patterns at work here:
+
+- **Constant Interface** — `SecurityConstants` itself. Interface members are implicitly
+  `public static final`, so any type that `implements` it inherits all five names unqualified;
+  this module deliberately never implements the interface and references the constants only via a
+  static import or `SecurityConstants.CONSTANT`, which keeps the exposure theoretical.
+- **Shared Comments / single-source-of-truth** — every prefix literal is composed exactly once,
+  from the external `MICROSPHERE_PROPERTY_NAME_PREFIX` plus `DOT_CHAR`, so downstream modules
+  reuse the same composed value instead of re-typing the `microsphere.security.*` text.
+- **No behavioural pattern** — the module has no runtime logic; every member is compile-time
+  constant data, so no Strategy/Template/Chain-style pattern applies.
+
+## Workflow
+
+The module has no runtime workflow: its only "flow" is the compile-time composition of the
+constant prefixes shown below, each derived from the external platform prefix.
+
+```mermaid
+flowchart LR
+    EXT["microsphere-java-core<br/>MICROSPHERE_PROPERTY_NAME_PREFIX = microsphere. + DOT_CHAR"]
+    ROOTP["PROPERTY_NAME_PREFIX<br/>microsphere.security."]
+    WEBP["WEB_SECURITY_PROPERTY_NAME_PREFIX<br/>microsphere.security.web (no trailing dot)"]
+    FILTERP["WEB_SECURITY_FILTER_PROPERTY_NAME_PREFIX<br/>microsphere.security.web.filter."]
+    CSPP["WEB_SECURITY_CSP_PROPERTY_NAME_PREFIX<br/>microsphere.security.web.csp."]
+    CORS_P["WEB_SECURITY_CORS_PROPERTY_NAME_PREFIX<br/>microsphere.security.web.cors."]
+    EXT --> ROOTP
+    ROOTP --> WEBP
+    WEBP --> FILTERP
+    WEBP --> CSPP
+    WEBP --> CORS_P
+```
 
 ## Extension points
 

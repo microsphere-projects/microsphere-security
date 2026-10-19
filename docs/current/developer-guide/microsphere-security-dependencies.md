@@ -6,7 +6,7 @@
 - User-facing docs: [../user-guide/microsphere-security-dependencies.md](../user-guide/microsphere-security-dependencies.md)
 - Chinese mirror: [microsphere-security-dependencies.zh.md](microsphere-security-dependencies.zh.md)
 
-## Purpose
+## Architecture Design
 
 `microsphere-security-dependencies` is the published **BOM** of this project: a `pom`-packaging
 module whose only content is a `dependencyManagement` block listing the project's own
@@ -16,7 +16,7 @@ microsphere-security artifacts without repeating versions.
 It is a *leaf* in the dependency graph: nothing inside this reactor imports it. It is produced
 for consumers, which means a mistake here does not break the local build — see Pitfalls.
 
-## What it manages and who consumes it
+## Module Dependencies
 
 ```mermaid
 graph TD
@@ -40,7 +40,7 @@ graph TD
 | `io.github.microsphere-projects:microsphere-security-core:${revision}` | **yes** — `microsphere-security-core/pom.xml` | Version-free dependency works. |
 | `io.github.microsphere-projects:microsphere-security-spring-boot-starter:${revision}` | **no** — the module's `artifactId` is `microsphere-security-spring-boot` | A consumer that relies on the BOM for this coordinate resolves an artifact this build does not produce. |
 
-## Source analysis
+## Source Code Analysis
 
 ```xml
 <parent>
@@ -82,6 +82,38 @@ Key structural facts:
   the CI-friendly convention used across the repository.
 - The BOM does not manage `microsphere-security-parent` or itself; those are POMs, not
   consumable libraries.
+
+## Design Patterns
+
+- **Bill of Materials (BOM)** — a published coordinate list pinned at `${revision}`: it carries no
+  code, only the `dependencyManagement` entries a downstream application imports so it can depend
+  on the project's artifacts without repeating versions.
+- **Leaf artifact** — the BOM is consumed only downstream and is invisible to the local reactor,
+  which is exactly the silent-failure property documented in the **Pitfalls** section below: a
+  wrong coordinate here cannot fail `mvn verify` in this repository.
+- **Dangling coordinate (anti-pattern)** — the `microsphere-security-spring-boot-starter` entry is
+  a managed coordinate with no producing module in this reactor; it is listed here honestly as an
+  exception rather than a supported artifact (see the starter-name discrepancy section below).
+
+## Workflow
+
+The BOM only takes effect inside a *downstream* build; the flow below runs when a consumer resolves
+its dependencies against the imported BOM.
+
+```mermaid
+flowchart TD
+    APP["Downstream application POM"]
+    IMPORT["import microsphere-security-dependencies<br/>scope = import"]
+    DECL["declare dependency on<br/>microsphere-security-core WITHOUT version"]
+    OK["Maven resolves version from BOM: build succeeds"]
+    BAD["declare microsphere-security-spring-boot-starter"]
+    FAIL["artifact not produced by this reactor: resolution fails"]
+    APP --> IMPORT
+    IMPORT --> DECL
+    DECL --> OK
+    APP --> BAD
+    BAD --> FAIL
+```
 
 ## The starter-name discrepancy (known issue)
 

@@ -152,6 +152,10 @@ public class SecurityConstantsTest {
 - 由于这些值是编译期 `String` 常量，它们会被**内联**进所有引用它们的类。若后续版本改动前缀，
   已编译的使用方不重新编译是不会生效的。
 
+- **发布日期：** 无 —— 截至版本 `0.0.1-SNAPSHOT`，本模块从未正式发布（无 git 标签、无 `release`
+  分支、未进入 Maven Central）。
+- **变更日志摘要：** 仓库中没有 `CHANGELOG` 或发布说明文件；`main` 分支的提交历史是唯一的变更记录。
+
 ## 兼容性
 
 - 不依赖 Spring、Servlet 或日志框架的纯 Java 库，因此在 JDK 允许的范围内处处可用。
@@ -160,6 +164,21 @@ public class SecurityConstantsTest {
   并非本仓库声明的基线。
 - 你实际拿到的 `microsphere-java-core` 版本由外部导入的 `microsphere-spring-cloud-dependencies`
   BOM 决定，因此取决于你的构建解析到了该 BOM 的哪一个快照。
+
+### Java 版本矩阵
+
+| Java 版本 | 是否支持 | 说明 |
+| --- | --- | --- |
+| 8 | 支持 | CI 已验证：`.github/workflows/maven.yml` 使用 Temurin `java: [ '8' ]` 构建。权威的 source/target 级别继承自外部父 POM `microsphere-build:0.0.21`，本仓库未声明。 |
+| 11 | 未验证 | 本仓库 CI 未覆盖；源码没有使用 Java 8 之后的 API，预期可在 11 上运行，但此处未测试。 |
+| 17 | 未验证 | 同 11 —— 本模块是不依赖任何框架的纯 Java 库。 |
+
+### 依赖兼容性
+
+| 依赖 | 作用域 | 本版本线的版本范围 | 来源 |
+| --- | --- | --- | --- |
+| `io.github.microsphere-projects:microsphere-java-core` | compile | 本 POM 中不写版本；由外部依赖链解析决定 | 外部 `microsphere-spring-cloud-dependencies` BOM |
+| `org.junit.jupiter:junit-jupiter-api` | test | 本 POM 中不写版本 | 同上外部 BOM 链 |
 
 ## 相关文档
 

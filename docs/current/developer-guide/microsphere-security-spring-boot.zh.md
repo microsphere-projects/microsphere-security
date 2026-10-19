@@ -6,14 +6,14 @@
 - 面向用户的文档：[../user-guide/microsphere-security-spring-boot.md](../user-guide/microsphere-security-spring-boot.zh.md)
 - 英文原文：[microsphere-security-spring-boot.md](microsphere-security-spring-boot.md)
 
-## 目的
+## 架构设计
 
 Spring Boot 集成层。一个自动配置类注册一组 servlet 过滤器，用于输出安全响应头
 （HSTS、XSS 防护、`X-Frame-Options`、`X-Content-Type-Options`、`Content-Security-Policy`）以及
 CORS 处理，全部由一个 `@ConfigurationProperties` 聚合对象驱动。除非显式打开，一切都是关闭的；
 并且其中四项头信息的输出是委托给 Tomcat 自己的 `HttpHeaderSecurityFilter` 完成的。
 
-## 模块结构
+### 模块结构
 
 ```text
 microsphere-security-spring-boot/
@@ -37,7 +37,7 @@ microsphere-security-spring-boot/
         └── ServletWebSecurityAutoConfigurationTest.java
 ```
 
-## 依赖
+## 模块依赖关系
 
 ```mermaid
 graph TD
@@ -347,7 +347,7 @@ response.setHeader((!reportOnly ? CONTENT_SECURITY_POLICY_HEADER : CONTENT_SECUR
 | **Facade over configuration（外观）** | `WebSecurityProperties` 把六种互不相干的头策略聚在一个前缀之下，嵌套对象提前实例化且不为 null | 一个 `@EnableConfigurationProperties` 装配全部，getter 永不 NPE —— 但嵌套对象里的 `enabled=false` 并*不是*决定 bean 是否创建的因素；每个 bean 由自己的 `@ConditionalOnProperty` 把关，因此属性对象与条件注解是两套并行的真相来源。 |
 | **Template Method（弱）** | `doFilter` 声明为 `final`，次序固定 | 保证了 processor-before-chain 的语义，代价是失去了通过继承扩展的能力；请通过新增 processor 来扩展。 |
 
-## 请求处理流程
+## 工作流程：请求处理
 
 ```mermaid
 sequenceDiagram
@@ -394,7 +394,7 @@ sequenceDiagram
 bean 定义顺序（`webSecurityProcessorFilter`、`corsFilter`、`httpHeaderSecurityFilter`）。不要把
 功能建立在这个假设之上；若确实重要，请用 `@Order` 把它钉死。
 
-## 自动配置的条件门控
+## 工作流程：条件门控
 
 ```mermaid
 flowchart TD
@@ -444,7 +444,7 @@ flowchart TD
 图中把两道类级别的条件门画成两个独立步骤，是因为注解声明的意图正是如此；本仓库没有任何测试单独
 验证过 `microsphere.security.enabled=false`，因此请用条件求值报告确认外层这道门，而不是想当然。
 
-## Processor 的组合与排序
+## 工作流程：处理器排序
 
 ```mermaid
 flowchart TD

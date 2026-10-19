@@ -159,6 +159,10 @@ mvn -f microsphere-security-parent/pom.xml help:effective-pom
   的外部版本，但它是*构建*父 POM 的版本，而不是本项目各模块的版本。
 - 项目中其它地方的 `@since 1.0.0` javadoc 标签与本模块的可用性无关；POM 模块没有 javadoc。
 
+- **发布日期：** 无 —— 截至版本 `0.0.1-SNAPSHOT`，本模块从未正式发布（无 git 标签、无 `release`
+  分支、未进入 Maven Central）。
+- **变更日志摘要：** 仓库中没有 `CHANGELOG` 或发布说明文件；`main` 分支的提交历史是唯一的变更记录。
+
 ## 兼容性
 
 - **Spring Boot 代际：** 本仓库的代码针对 `javax.servlet.*` 编译，并通过
@@ -173,6 +177,24 @@ mvn -f microsphere-security-parent/pom.xml help:effective-pom
 - **JDK：** 继承自外部父 POM `microsphere-build:0.0.21`，本仓库中未声明。
 - **所有三方版本：** 经由外部导入的 `microsphere-spring-cloud-dependencies` BOM 继承；
   实际管理了哪些内容请查阅该 BOM。
+
+### Java 版本矩阵
+
+该 POM 模块本身不编译字节码；适用的基线是其代码子模块
+（`microsphere-security-core`、`microsphere-security-spring-boot`）继承的级别：
+
+| Java 版本 | 是否支持 | 说明 |
+| --- | --- | --- |
+| 8 | 支持 | CI 已验证（`.github/workflows/maven.yml`，Temurin `java: [ '8' ]`）；权威的 source/target 级别继承自外部父 POM `microsphere-build:0.0.21`，本仓库未声明。 |
+| 11 | 未验证 | CI 未覆盖；子模块只使用 Java 8 时代的 API。 |
+| 17 | 未验证 | CI 未覆盖。 |
+
+### 依赖兼容性
+
+| 依赖 | 本版本线的范围 | 来源 |
+| --- | --- | --- |
+| Spring Boot 及所有三方版本 | Spring Boot **2.x** 代际（子模块使用 `javax.servlet` + `spring.factories`）；不支持 3.x | 由导入的外部 `microsphere-spring-cloud-dependencies` BOM 提供 —— 具体版本**不**在本仓库中声明 |
+| `microsphere-java-core` 及项目构件 | 由同一外部链 / reactor 解析 | 外部 BOM / reactor |
 
 ## 相关文档
 
